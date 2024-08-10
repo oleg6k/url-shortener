@@ -23,7 +23,9 @@ func (controller *Controller) PostShorting(writer http.ResponseWriter, request *
 		return
 	}
 
-	if request.Header.Get("Content-Type") != "text/plain" {
+	contentType := request.Header.Get("Content-Type")
+	mediaType := strings.TrimSpace(strings.Split(contentType, ";")[0])
+	if mediaType != "text/plain" {
 		http.Error(writer, "Invalid content type", http.StatusBadRequest)
 		return
 	}
@@ -46,7 +48,7 @@ func (controller *Controller) PostShorting(writer http.ResponseWriter, request *
 		return
 	}
 
-	shortenedURL := fmt.Sprintf("%s/%s", controller.host, controller.service.getHashByUrl(originalURL))
+	shortenedURL := fmt.Sprintf("%s/%s", controller.host, controller.service.getHashByURL(originalURL))
 
 	writer.Header().Set("Content-Type", "text/plain")
 	writer.WriteHeader(http.StatusCreated)
@@ -63,7 +65,7 @@ func (controller *Controller) GetRedirectToOriginal(writer http.ResponseWriter, 
 	parts := strings.Split(path, "/")
 	if len(parts) > 1 && parts[1] != "" {
 		hash := parts[1]
-		originalURL := controller.service.getUrlByHash(hash)
+		originalURL := controller.service.getURLByHash(hash)
 		if originalURL != "" {
 			http.Redirect(writer, request, originalURL, http.StatusTemporaryRedirect)
 			return

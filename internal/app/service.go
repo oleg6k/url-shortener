@@ -10,7 +10,7 @@ func NewService() *Service {
 	return &Service{storage: make(map[string]string)}
 }
 
-func (service *Service) getHashByUrl(url string) string {
+func (service *Service) getHashByURL(url string) string {
 	var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := make([]byte, 8)
 	for i := range b {
@@ -26,6 +26,6 @@ func (service *Service) getHashByUrl(url string) string {
 
 	return hash
 }
-func (service *Service) getUrlByHash(hash string) string {
+func (service *Service) getURLByHash(hash string) string {
 	return service.storage[hash]
 }
