@@ -40,7 +40,7 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			controller := &Controller{
 				host:    test.fields.host,
-				service: NewService(),
+				service: NewService(make(map[string]string)),
 			}
 
 			request := httptest.NewRequest(http.MethodGet, "/AcDbS", nil)
@@ -82,7 +82,7 @@ func TestController_PostShorting(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			controller := &Controller{
 				host:    test.fields.host,
-				service: NewService(),
+				service: NewService(make(map[string]string)),
 			}
 
 			request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte("https://test.test")))
