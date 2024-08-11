@@ -23,7 +23,7 @@ type want struct {
 
 func TestController_GetRedirectToOriginal(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	router := gin.New()
+	router := gin.Default()
 	tests := []struct {
 		name   string
 		want   want
@@ -33,7 +33,7 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 			name: "negative test #1",
 			want: want{
 				code:        400,
-				response:    "Invalid URL",
+				response:    "invalid URL",
 				contentType: "text/plain",
 			},
 		},
@@ -49,23 +49,17 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 			assert.NoError(t, err)
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
-			res := w.Result()
 			// проверяем код ответа
-			assert.Equal(t, test.want.code, res.StatusCode)
-			// получаем и проверяем тело запроса
-			defer res.Body.Close()
-			resBody, err := io.ReadAll(res.Body)
-
-			require.NoError(t, err)
-			assert.Contains(t, string(resBody), test.want.response)
-			assert.Contains(t, res.Header.Get("Content-Type"), test.want.contentType)
+			assert.Equal(t, test.want.code, w.Code)
+			assert.Contains(t, w.Body.String(), test.want.response)
+			assert.Contains(t, w.Header().Get("Content-Type"), test.want.contentType)
 		})
 	}
 }
 
 func TestController_PostShorting(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	router := gin.New()
+	router := gin.Default()
 	tests := []struct {
 		name   string
 		want   want
