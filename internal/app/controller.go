@@ -1,7 +1,9 @@
 package app
 
 import (
+	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"net/url"
@@ -17,59 +19,45 @@ func NewController(host string, service *Service) *Controller {
 	return &Controller{host: host, service: service}
 }
 
-func (controller *Controller) PostShorting(writer http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodPost {
-		http.Error(writer, "Method not allowed", http.StatusBadRequest)
-		return
-	}
-
-	contentType := request.Header.Get("Content-Type")
+func (controller *Controller) PostShorting(c *gin.Context) {
+	contentType := c.Request.Header.Get("Content-Type")
 	mediaType := strings.TrimSpace(strings.Split(contentType, ";")[0])
 	if mediaType != "text/plain" {
-		http.Error(writer, "Invalid content type", http.StatusBadRequest)
+		c.AbortWithError(http.StatusBadRequest, errors.New("invalid content type"))
 		return
 	}
 
-	body, err := io.ReadAll(request.Body)
+	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		http.Error(writer, "Failed to read request body", http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, errors.New("failed to read request body"))
 		return
 	}
 
 	originalURL := string(body)
 	if originalURL == "" {
-		http.Error(writer, "Empty URL provided", http.StatusBadRequest)
+		c.AbortWithError(http.StatusBadRequest, errors.New("empty URL provided"))
 		return
 	}
 
 	_, err = url.ParseRequestURI(originalURL)
 	if err != nil {
-		http.Error(writer, "Invalid URL Format", http.StatusBadRequest)
+		c.AbortWithError(http.StatusBadRequest, errors.New("invalid URL Format"))
 		return
 	}
 
 	shortenedURL := fmt.Sprintf("%s/%s", controller.host, controller.service.getHashByURL(originalURL))
 
-	writer.Header().Set("Content-Type", "text/plain")
-	writer.WriteHeader(http.StatusCreated)
-	writer.Write([]byte(shortenedURL))
+	c.Writer.Header().Set("Content-Type", "text/plain")
+	c.Writer.WriteHeader(http.StatusCreated)
+	c.Writer.Write([]byte(shortenedURL))
 }
 
-func (controller *Controller) GetRedirectToOriginal(writer http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodGet {
-		http.Error(writer, "Method not allowed", http.StatusBadRequest)
+func (controller *Controller) GetRedirectToOriginal(c *gin.Context) {
+	shortURL := c.Param("shortUrl")
+	originalURL := controller.service.getURLByHash(shortURL)
+	if originalURL != "" {
+		c.Redirect(http.StatusTemporaryRedirect, originalURL)
 		return
 	}
-
-	path := request.URL.Path
-	parts := strings.Split(path, "/")
-	if len(parts) > 1 && parts[1] != "" {
-		hash := parts[1]
-		originalURL := controller.service.getURLByHash(hash)
-		if originalURL != "" {
-			http.Redirect(writer, request, originalURL, http.StatusTemporaryRedirect)
-			return
-		}
-	}
-	http.Error(writer, "Invalid URL", http.StatusBadRequest)
+	c.AbortWithError(http.StatusBadRequest, errors.New("invalid URL provided"))
 }

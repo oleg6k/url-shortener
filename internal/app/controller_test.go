@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -21,7 +22,8 @@ type want struct {
 }
 
 func TestController_GetRedirectToOriginal(t *testing.T) {
-
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
 	tests := []struct {
 		name   string
 		want   want
@@ -42,12 +44,11 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 				host:    test.fields.host,
 				service: NewService(make(map[string]string)),
 			}
-
-			request := httptest.NewRequest(http.MethodGet, "/AcDbS", nil)
-			// создаём новый Recorder
+			router.GET("/AcDbS", controller.GetRedirectToOriginal)
+			req, err := http.NewRequest(http.MethodGet, "/AcDbS", nil)
+			assert.NoError(t, err)
 			w := httptest.NewRecorder()
-			controller.GetRedirectToOriginal(w, request)
-
+			router.ServeHTTP(w, req)
 			res := w.Result()
 			// проверяем код ответа
 			assert.Equal(t, test.want.code, res.StatusCode)
@@ -63,7 +64,8 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 }
 
 func TestController_PostShorting(t *testing.T) {
-
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
 	tests := []struct {
 		name   string
 		want   want
@@ -84,12 +86,12 @@ func TestController_PostShorting(t *testing.T) {
 				host:    test.fields.host,
 				service: NewService(make(map[string]string)),
 			}
-
-			request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte("https://test.test")))
-			request.Header.Set("Content-Type", "text/plain")
-			// создаём новый Recorder
+			router.POST("/", controller.PostShorting)
+			req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte("https://test.test")))
+			req.Header.Set("Content-Type", "text/plain")
+			assert.NoError(t, err)
 			w := httptest.NewRecorder()
-			controller.PostShorting(w, request)
+			router.ServeHTTP(w, req)
 
 			res := w.Result()
 			// проверяем код ответа
