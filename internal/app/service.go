@@ -6,8 +6,8 @@ type Service struct {
 	storage map[string]string
 }
 
-func NewService() *Service {
-	return &Service{storage: make(map[string]string)}
+func NewService(storage map[string]string) *Service {
+	return &Service{storage: storage}
 }
 
 func (service *Service) getHashByURL(url string) string {

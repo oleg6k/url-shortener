@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	service := app.NewService()
+	service := app.NewService(make(map[string]string))
 	controller := app.NewController("http://localhost:8080", service)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
