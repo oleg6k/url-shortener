@@ -13,10 +13,8 @@ func main() {
 	controller := app.NewController("http://localhost:8080", service)
 	r := gin.Default()
 
-	r.Group("/", func(c *gin.Context) {
-		r.POST("", controller.PostShorting)
-		r.GET(":shortUrl", controller.GetRedirectToOriginal)
-	})
+	r.POST("/", controller.PostShorting)
+	r.GET("/:shortUrl", controller.GetRedirectToOriginal)
 
 	r.Run(":8080")
 }
