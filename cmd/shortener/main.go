@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/oleg6k/url-shortener/config"
 	"github.com/oleg6k/url-shortener/internal/app"
+	"github.com/oleg6k/url-shortener/internal/app/config"
 )
 
 import (
@@ -10,8 +10,7 @@ import (
 )
 
 func main() {
-	flags := ParseFlags()
-	cfg := config.Load(flags.RunAddr, flags.BaseURL)
+	cfg := config.Load()
 
 	service := app.NewService(make(map[string]string))
 	controller := app.NewController(cfg.BaseURL, service)
