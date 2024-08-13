@@ -11,15 +11,21 @@ type Config struct {
 }
 
 func Load() *Config {
-	runAddr := os.Getenv("SERVER_ADDRESS")
-	if runAddr == "" {
-		flag.StringVar(&runAddr, "a", ":8080", "address and port to run server")
-	}
-	baseURL := os.Getenv("BASE_URL")
-	if baseURL == "" {
-		flag.StringVar(&baseURL, "b", "http://localhost:8080", "base address and port to shortener results")
-	}
+
+	var runAddr string
+	var baseURL string
+
+	flag.StringVar(&runAddr, "a", ":8080", "address and port to run server")
+	flag.StringVar(&baseURL, "b", "http://localhost:8080", "base address and port to shortener results")
 	flag.Parse()
+
+	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {
+		runAddr = envRunAddr
+	}
+
+	if envBaseURL := os.Getenv("BASE_URL"); envBaseURL != "" {
+		baseURL = envBaseURL
+	}
 
 	return &Config{
 		RunAddr: runAddr,
