@@ -10,19 +10,15 @@ type Config struct {
 	BaseURL string
 }
 
-func getEnv(key string, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-	return defaultValue
-}
-
 func Load() *Config {
-	runAddr := getEnv("RUN_ADDRESS", ":8080")
-	baseURL := getEnv("BASE_URL", "http://localhost:8080")
-
-	flag.StringVar(&runAddr, "a", runAddr, "address and port to run server")
-	flag.StringVar(&baseURL, "b", baseURL, "base address and port to shortener results")
+	runAddr := os.Getenv("SERVER_ADDRESS")
+	if runAddr == "" {
+		flag.StringVar(&runAddr, "a", ":8080", "address and port to run server")
+	}
+	baseURL := os.Getenv("BASE_URL")
+	if baseURL == "" {
+		flag.StringVar(&baseURL, "b", "http://localhost:8080", "base address and port to shortener results")
+	}
 	flag.Parse()
 
 	return &Config{
