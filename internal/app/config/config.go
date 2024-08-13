@@ -19,14 +19,14 @@ func getEnv(key string, defaultValue string) string {
 
 func Load() *Config {
 	runAddr := getEnv("RUN_ADDRESS", ":8080")
-	baseUrl := getEnv("BASE_URL", "http://localhost:8080")
+	baseURL := getEnv("BASE_URL", "http://localhost:8080")
 
 	flag.StringVar(&runAddr, "a", runAddr, "address and port to run server")
-	flag.StringVar(&baseUrl, "b", baseUrl, "base address and port to shortener results")
+	flag.StringVar(&baseURL, "b", baseURL, "base address and port to shortener results")
 	flag.Parse()
 
 	return &Config{
 		RunAddr: runAddr,
-		BaseURL: baseUrl,
+		BaseURL: baseURL,
 	}
 }
