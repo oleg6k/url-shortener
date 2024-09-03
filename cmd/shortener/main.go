@@ -2,21 +2,19 @@ package main
 
 import (
 	"github.com/oleg6k/url-shortener/internal/app"
-	"net/http"
+)
+
+import (
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	service := app.NewService(make(map[string]string))
 	controller := app.NewController("http://localhost:8080", service)
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			controller.PostShorting(w, r)
-		} else if r.Method == http.MethodGet {
-			controller.GetRedirectToOriginal(w, r)
-		} else {
-			http.Error(w, "Not Found", http.StatusNotFound)
-		}
-	})
-	http.ListenAndServe(":8080", mux)
+	r := gin.Default()
+
+	r.POST("/", controller.PostShorting)
+	r.GET("/:shortUrl", controller.GetRedirectToOriginal)
+
+	r.Run(":8080")
 }
