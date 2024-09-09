@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -57,15 +58,20 @@ func (controller *Controller) PostShorting(c *gin.Context) {
 }
 
 func (controller *Controller) PostShortingJSON(c *gin.Context) {
-
 	var jsonBody ShortingJSONBody
-
-	if err := c.ShouldBindJSON(&jsonBody); err != nil {
+	byteBody, err := io.ReadAll(c.Request.Body)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := validate.Struct(&jsonBody); err != nil {
+	err = json.Unmarshal(byteBody, &jsonBody)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err = validate.Struct(&jsonBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
