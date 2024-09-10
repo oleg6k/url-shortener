@@ -8,8 +8,10 @@ import (
 	"strings"
 )
 
+// GzipMiddleware handles both Gzip decompression for incoming requests and compression for outgoing responses.
 func GzipMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Decompression: Check if the request is Gzip compressed
 		if c.GetHeader("Content-Encoding") == "gzip" {
 			gz, err := gzip.NewReader(c.Request.Body)
 			if err != nil {
@@ -20,19 +22,23 @@ func GzipMiddleware() gin.HandlerFunc {
 			c.Request.Body = io.NopCloser(gz)
 		}
 
-		c.Next()
+		contentType := c.Writer.Header().Get("Content-Type")
 
-		if strings.Contains(c.GetHeader("Accept-Encoding"), "gzip") {
-			contentType := c.Writer.Header().Get("Content-Type")
-			if strings.Contains(contentType, "application/json") || strings.Contains(contentType, "text/html") {
-				c.Writer.Header().Set("Content-Encoding", "gzip")
-				c.Writer.Header().Set("Vary", "Accept-Encoding")
+		if (strings.Contains(contentType, "application/json") || strings.Contains(contentType, "text/html")) && strings.Contains(c.GetHeader("Accept-Encoding"), "gzip") {
+			c.Writer.Header().Set("Content-Encoding", "gzip")
+			c.Writer.Header().Set("Vary", "Accept-Encoding")
 
-				gz := gzip.NewWriter(c.Writer)
-				defer gz.Close()
+			gz := gzip.NewWriter(c.Writer)
+			defer gz.Close()
 
-				c.Writer = &gzipWriter{Writer: gz, ResponseWriter: c.Writer}
-			}
+			gzWriter := &gzipWriter{Writer: gz, ResponseWriter: c.Writer}
+			c.Writer = gzWriter
+
+			c.Next()
+
+			gzWriter.Flush()
+		} else {
+			c.Next()
 		}
 	}
 }
@@ -44,4 +50,10 @@ type gzipWriter struct {
 
 func (w *gzipWriter) Write(data []byte) (int, error) {
 	return w.Writer.Write(data)
+}
+
+func (w *gzipWriter) Flush() {
+	if flusher, ok := w.Writer.(interface{ Flush() error }); ok {
+		flusher.Flush()
+	}
 }
