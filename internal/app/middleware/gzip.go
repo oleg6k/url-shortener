@@ -13,7 +13,7 @@ func GzipMiddleware() gin.HandlerFunc {
 		if strings.Contains(c.GetHeader("Content-Encoding"), "gzip") {
 			gr, err := gzip.NewReader(c.Request.Body)
 			if err != nil {
-				c.AbortWithStatus(http.StatusInternalServerError)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
 			defer gr.Close()
