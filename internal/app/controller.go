@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 )
 
@@ -30,9 +31,9 @@ func (controller *Controller) PostShorting(c *gin.Context) {
 	c.Header("Content-Type", "text/plain")
 	contentType := c.Request.Header.Get("Content-Type")
 	mediaType := strings.TrimSpace(strings.Split(contentType, ";")[0])
-	if mediaType != "text/plain" {
+	if !slices.Contains([]string{"application/x-gzip", "text/plain"}, mediaType) {
 		c.AbortWithStatus(http.StatusBadRequest)
-		c.String(http.StatusBadRequest, "Content-Type must be text/plain")
+		c.String(http.StatusBadRequest, "Content-Type must be text/plain or application/x-gzip")
 		return
 	}
 
