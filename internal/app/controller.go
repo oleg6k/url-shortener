@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -31,25 +32,25 @@ func (controller *Controller) PostShorting(c *gin.Context) {
 	contentType := c.Request.Header.Get("Content-Type")
 	mediaType := strings.TrimSpace(strings.Split(contentType, ";")[0])
 	if mediaType != "text/plain" {
-		c.String(http.StatusBadRequest, "invalid content type")
+		c.AbortWithError(http.StatusBadRequest, errors.New("Content-Type must be text/plain"))
 		return
 	}
 
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "failed to read request body")
+		c.AbortWithError(http.StatusInternalServerError, errors.New("failed to read request body"))
 		return
 	}
 
 	originalURL := string(body)
 	if originalURL == "" {
-		c.String(http.StatusBadRequest, "empty URL provided")
+		c.AbortWithError(http.StatusBadRequest, errors.New("empty URL provided"))
 		return
 	}
 
 	_, err = url.ParseRequestURI(originalURL)
 	if err != nil {
-		c.String(http.StatusBadRequest, "invalid URL Format")
+		c.AbortWithError(http.StatusBadRequest, errors.New("invalid URL Format"))
 		return
 	}
 
