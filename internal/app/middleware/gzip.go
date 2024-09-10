@@ -70,7 +70,7 @@ func GzipMiddleware() func(c *gin.Context) {
 		acceptEncoding := c.Request.Header.Get("Accept-Encoding")
 		supportsGzip := strings.Contains(acceptEncoding, "gzip")
 
-		acceptOptions := []string{"*/*", "application/json", "html/text", "application/x-gzip"}
+		acceptOptions := []string{"*/*", "application/json", "text/html", "application/x-gzip"}
 		supportsGzipByContent := slices.Contains(acceptOptions, c.Request.Header.Get("Accept"))
 
 		if supportsGzip && supportsGzipByContent {
