@@ -8,38 +8,40 @@ import (
 	"strings"
 )
 
-// GzipMiddleware handles both Gzip decompression for incoming requests and compression for outgoing responses.
 func GzipMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Decompression: Check if the request is Gzip compressed
-		if c.GetHeader("Content-Encoding") == "gzip" {
-			gz, err := gzip.NewReader(c.Request.Body)
+		if strings.Contains(c.GetHeader("Content-Encoding"), "gzip") {
+			gr, err := gzip.NewReader(c.Request.Body)
 			if err != nil {
-				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid gzip data"})
+				c.AbortWithStatus(http.StatusInternalServerError)
 				return
 			}
-			defer gz.Close()
-			c.Request.Body = io.NopCloser(gz)
+			defer gr.Close()
+			c.Request.Body = io.NopCloser(gr)
 		}
 
-		contentType := c.Writer.Header().Get("Content-Type")
+		acceptEncoding := c.GetHeader("Accept-Encoding")
+		supportsGzip := strings.Contains(acceptEncoding, "gzip")
 
-		if (strings.Contains(contentType, "application/json") || strings.Contains(contentType, "text/html")) && strings.Contains(c.GetHeader("Accept-Encoding"), "gzip") {
+		acceptOptions := []string{"*/*", "application/json", "text/html", "application/x-gzip"}
+		contentType := c.GetHeader("Accept")
+		supportsGzipByContent := false
+		for _, option := range acceptOptions {
+			if strings.Contains(contentType, option) {
+				supportsGzipByContent = true
+				break
+			}
+		}
+
+		if supportsGzip && supportsGzipByContent {
 			c.Writer.Header().Set("Content-Encoding", "gzip")
-			c.Writer.Header().Set("Vary", "Accept-Encoding")
+			cw := gzip.NewWriter(c.Writer)
+			defer cw.Close()
 
-			gz := gzip.NewWriter(c.Writer)
-			defer gz.Close()
-
-			gzWriter := &gzipWriter{Writer: gz, ResponseWriter: c.Writer}
-			c.Writer = gzWriter
-
-			c.Next()
-
-			gzWriter.Flush()
-		} else {
-			c.Next()
+			c.Writer = &gzipWriter{Writer: cw, ResponseWriter: c.Writer}
 		}
+
+		c.Next()
 	}
 }
 
@@ -50,10 +52,4 @@ type gzipWriter struct {
 
 func (w *gzipWriter) Write(data []byte) (int, error) {
 	return w.Writer.Write(data)
-}
-
-func (w *gzipWriter) Flush() {
-	if flusher, ok := w.Writer.(interface{ Flush() error }); ok {
-		flusher.Flush()
-	}
 }
