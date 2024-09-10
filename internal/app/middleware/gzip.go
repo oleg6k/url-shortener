@@ -5,51 +5,92 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
+	"slices"
 	"strings"
 )
 
-func GzipMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if strings.Contains(c.GetHeader("Content-Encoding"), "gzip") {
-			gr, err := gzip.NewReader(c.Request.Body)
-			if err != nil {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			defer gr.Close()
-			c.Request.Body = io.NopCloser(gr)
-		}
+type Writer struct {
+	gin.ResponseWriter
+	zw *gzip.Writer
+}
 
-		acceptEncoding := c.GetHeader("Accept-Encoding")
-		supportsGzip := strings.Contains(acceptEncoding, "gzip")
-
-		acceptOptions := []string{"*/*", "application/json", "text/html", "application/x-gzip"}
-		contentType := c.GetHeader("Accept")
-		supportsGzipByContent := false
-		for _, option := range acceptOptions {
-			if strings.Contains(contentType, option) {
-				supportsGzipByContent = true
-				break
-			}
-		}
-
-		if supportsGzip && supportsGzipByContent {
-			c.Writer.Header().Set("Content-Encoding", "gzip")
-			cw := gzip.NewWriter(c.Writer)
-			defer cw.Close()
-
-			c.Writer = &gzipWriter{Writer: cw, ResponseWriter: c.Writer}
-		}
-
-		c.Next()
+func newCompressWriter(w gin.ResponseWriter) *Writer {
+	return &Writer{
+		ResponseWriter: w,
+		zw:             gzip.NewWriter(w),
 	}
 }
 
-type gzipWriter struct {
-	gin.ResponseWriter
-	io.Writer
+func (c *Writer) Write(p []byte) (int, error) {
+	return c.zw.Write(p)
 }
 
-func (w *gzipWriter) Write(data []byte) (int, error) {
-	return w.Writer.Write(data)
+func (c *Writer) WriteHeader(statusCode int) {
+	if statusCode < 300 {
+		c.ResponseWriter.Header().Set("Content-Encoding", "gzip")
+	}
+	c.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (c *Writer) Close() error {
+	return c.zw.Close()
+}
+
+type Reader struct {
+	r  io.ReadCloser
+	zr *gzip.Reader
+}
+
+func newCompressReader(r io.ReadCloser) (*Reader, error) {
+	zr, err := gzip.NewReader(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Reader{
+		r:  r,
+		zr: zr,
+	}, nil
+}
+
+func (c Reader) Read(p []byte) (n int, err error) {
+	return c.zr.Read(p)
+}
+
+func (c *Reader) Close() error {
+	if err := c.r.Close(); err != nil {
+		return err
+	}
+	return c.zr.Close()
+}
+
+func GzipMiddleware() func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		acceptEncoding := c.Request.Header.Get("Accept-Encoding")
+		supportsGzip := strings.Contains(acceptEncoding, "gzip")
+
+		acceptOptions := []string{"*/*", "application/json", "html/text", "application/x-gzip"}
+		supportsGzipByContent := slices.Contains(acceptOptions, c.Request.Header.Get("Accept"))
+
+		if supportsGzip && supportsGzipByContent {
+			cw := newCompressWriter(c.Writer)
+			c.Writer = cw
+			defer cw.Close()
+		}
+
+		contentEncoding := c.Request.Header.Get("Content-Encoding")
+		sendsGzip := strings.Contains(contentEncoding, "gzip")
+		if sendsGzip {
+			cr, err := newCompressReader(c.Request.Body)
+			if err != nil {
+				c.Writer.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			c.Request.Body = cr
+			defer cr.Close()
+
+		}
+		c.Next()
+	}
 }
