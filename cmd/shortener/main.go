@@ -17,7 +17,13 @@ func main() {
 	sugar := *logger.Sugar()
 	cfg := config.Load()
 
-	service := app.NewService(make(map[string]string))
+	repository := app.NewRepository(cfg.FileStoragePath)
+	err = repository.Load()
+	if err != nil {
+		sugar.Panicw(err.Error(), "event", "load repository")
+	}
+
+	service := app.NewService(repository)
 	controller := app.NewController(cfg.BaseURL, service)
 
 	r := gin.Default()

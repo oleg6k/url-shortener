@@ -3,14 +3,14 @@ package app
 import "math/rand"
 
 type Service struct {
-	storage map[string]string
+	repository *Repository
 }
 
-func NewService(storage map[string]string) *Service {
-	return &Service{storage: storage}
+func NewService(repository *Repository) *Service {
+	return &Service{repository: repository}
 }
 
-func (service *Service) getHashByURL(url string) string {
+func (service *Service) getHashByURL(url string) (string, error) {
 	var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := make([]byte, 8)
 	for i := range b {
@@ -18,14 +18,18 @@ func (service *Service) getHashByURL(url string) string {
 	}
 	hash := string(b)
 
-	service.storage[hash] = url
-	if service.storage[url] != "" {
-		delete(service.storage, url)
-	}
-	service.storage[url] = hash
+	err := service.repository.AddURLRecord(URLRecord{
+		ShortURL:    hash,
+		OriginalURL: url,
+	})
 
-	return hash
+	if err != nil {
+		return "", err
+	}
+
+	return service.repository.storage[url], nil
 }
+
 func (service *Service) getURLByHash(hash string) string {
-	return service.storage[hash]
+	return service.repository.storage[hash]
 }
