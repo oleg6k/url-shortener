@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/oleg6k/url-shortener/internal/app/types"
 	"io"
 	"net/http"
 	"net/url"
@@ -68,7 +69,7 @@ func (controller *Controller) PostShorting(c *gin.Context) {
 }
 
 func (controller *Controller) PostShortingJSON(c *gin.Context) {
-	var jsonBody ShortingJSONBody
+	var jsonBody types.ShortingJSONBody
 	byteBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
