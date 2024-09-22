@@ -1,17 +1,25 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
+var validate *validator.Validate
+
 type Controller struct {
 	host    string
 	service *Service
+}
+
+func init() {
+	validate = validator.New()
 }
 
 func NewController(host string, service *Service) *Controller {
@@ -47,6 +55,29 @@ func (controller *Controller) PostShorting(c *gin.Context) {
 
 	shortenedURL := fmt.Sprintf("%s/%s", controller.host, controller.service.getHashByURL(originalURL))
 	c.String(http.StatusCreated, shortenedURL)
+}
+
+func (controller *Controller) PostShortingJSON(c *gin.Context) {
+	var jsonBody ShortingJSONBody
+	byteBody, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = json.Unmarshal(byteBody, &jsonBody)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err = validate.Struct(&jsonBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	shortenedURL := fmt.Sprintf("%s/%s", controller.host, controller.service.getHashByURL(jsonBody.URL))
+	c.JSON(http.StatusCreated, gin.H{"result": shortenedURL})
 }
 
 func (controller *Controller) GetRedirectToOriginal(c *gin.Context) {

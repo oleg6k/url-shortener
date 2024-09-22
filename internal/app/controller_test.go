@@ -49,7 +49,6 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 			assert.NoError(t, err)
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
-			// проверяем код ответа
 			assert.Equal(t, test.want.code, w.Code)
 			assert.Contains(t, w.Body.String(), test.want.response)
 			assert.Contains(t, w.Header().Get("Content-Type"), test.want.contentType)

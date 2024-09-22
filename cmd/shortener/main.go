@@ -23,6 +23,7 @@ func main() {
 	r := gin.Default()
 
 	r.Use(middleware.LoggerMiddleware(sugar))
+	r.POST("/api/shorten", controller.PostShortingJSON)
 	r.POST("/", controller.PostShorting)
 	r.GET("/:shortUrl", controller.GetRedirectToOriginal)
 
