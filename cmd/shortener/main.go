@@ -17,8 +17,7 @@ func main() {
 	sugar := *logger.Sugar()
 	cfg := config.Load()
 
-	repository := app.NewRepository(cfg.FileStoragePath)
-	err = repository.Load()
+	repository, err := app.NewStorage("", cfg.FileStoragePath)
 	if err != nil {
 		sugar.Panicw(err.Error(), "event", "load repository")
 	}

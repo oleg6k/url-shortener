@@ -1,13 +1,16 @@
 package app
 
-import "math/rand"
+import (
+	"github.com/oleg6k/url-shortener/internal/app/types"
+	"math/rand"
+)
 
 type Service struct {
-	repository *Repository
+	storage *Storage
 }
 
-func NewService(repository *Repository) *Service {
-	return &Service{repository: repository}
+func NewService(storage *Storage) *Service {
+	return &Service{storage: storage}
 }
 
 func (service *Service) getHashByURL(url string) (string, error) {
@@ -18,7 +21,7 @@ func (service *Service) getHashByURL(url string) (string, error) {
 	}
 	hash := string(b)
 
-	err := service.repository.AddURLRecord(URLRecord{
+	err := service.storage.Add(types.URLRecord{
 		ShortURL:    hash,
 		OriginalURL: url,
 	})
@@ -27,9 +30,10 @@ func (service *Service) getHashByURL(url string) (string, error) {
 		return "", err
 	}
 
-	return service.repository.storage[url], nil
+	return hash, nil
 }
 
 func (service *Service) getURLByHash(hash string) string {
-	return service.repository.storage[hash]
+	url, _ := service.storage.Get(hash)
+	return url.OriginalURL
 }
