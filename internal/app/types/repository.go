@@ -11,7 +11,7 @@ type URLRecord struct {
 	OriginalURL string `json:"original_url"`
 }
 
-type DiskUrlRecord struct {
+type DiskURLRecord struct {
 	UUID string `json:"uuid"`
 	URLRecord
 }

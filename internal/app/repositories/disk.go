@@ -35,10 +35,7 @@ func (r *DiskRepository) Add(record types.URLRecord) error {
 		return nil
 	}
 
-	r.inMemoryRepository.Lock()
-	defer r.inMemoryRepository.Unlock()
-
-	fullRecord := types.DiskUrlRecord{
+	fullRecord := types.DiskURLRecord{
 		UUID:      uuid.New().String(),
 		URLRecord: record,
 	}
@@ -70,9 +67,6 @@ func (r *DiskRepository) Delete(key string) error {
 }
 
 func (r *DiskRepository) Load() error {
-
-	r.inMemoryRepository.Lock()
-	defer r.inMemoryRepository.Unlock()
 
 	file, err := os.OpenFile(r.filePath, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
