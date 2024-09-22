@@ -40,7 +40,9 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			service := NewService(NewRepository("./storage.json"))
+			storage, err := NewStorage("", "./storage.json")
+			assert.NoError(t, err)
+			service := NewService(storage)
 			controller := &Controller{
 				host:    test.fields.host,
 				service: service,
@@ -76,7 +78,9 @@ func TestController_PostShorting(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			service := NewService(NewRepository("./storage.json"))
+			storage, err := NewStorage("", "./storage.json")
+			assert.NoError(t, err)
+			service := NewService(storage)
 			controller := &Controller{
 				host:    test.fields.host,
 				service: service,
