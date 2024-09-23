@@ -40,9 +40,12 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			storage, err := NewStorage("", "./storage.json")
+			assert.NoError(t, err)
+			service := NewService(storage)
 			controller := &Controller{
 				host:    test.fields.host,
-				service: NewService(make(map[string]string)),
+				service: service,
 			}
 			router.GET("/AcDbS", controller.GetRedirectToOriginal)
 			req, err := http.NewRequest(http.MethodGet, "/AcDbS", nil)
@@ -75,9 +78,12 @@ func TestController_PostShorting(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			storage, err := NewStorage("", "./storage.json")
+			assert.NoError(t, err)
+			service := NewService(storage)
 			controller := &Controller{
 				host:    test.fields.host,
-				service: NewService(make(map[string]string)),
+				service: service,
 			}
 			router.POST("/", controller.PostShorting)
 			req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte("https://test.test")))

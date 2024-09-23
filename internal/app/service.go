@@ -1,16 +1,19 @@
 package app
 
-import "math/rand"
+import (
+	"github.com/oleg6k/url-shortener/internal/app/types"
+	"math/rand"
+)
 
 type Service struct {
-	storage map[string]string
+	storage *Storage
 }
 
-func NewService(storage map[string]string) *Service {
+func NewService(storage *Storage) *Service {
 	return &Service{storage: storage}
 }
 
-func (service *Service) getHashByURL(url string) string {
+func (service *Service) getHashByURL(url string) (string, error) {
 	var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := make([]byte, 8)
 	for i := range b {
@@ -18,14 +21,19 @@ func (service *Service) getHashByURL(url string) string {
 	}
 	hash := string(b)
 
-	service.storage[hash] = url
-	if service.storage[url] != "" {
-		delete(service.storage, url)
-	}
-	service.storage[url] = hash
+	err := service.storage.Add(types.URLRecord{
+		ShortURL:    hash,
+		OriginalURL: url,
+	})
 
-	return hash
+	if err != nil {
+		return "", err
+	}
+
+	return hash, nil
 }
+
 func (service *Service) getURLByHash(hash string) string {
-	return service.storage[hash]
+	url, _ := service.storage.Get(hash)
+	return url.OriginalURL
 }

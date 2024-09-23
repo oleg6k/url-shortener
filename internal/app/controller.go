@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/oleg6k/url-shortener/internal/app/types"
 	"io"
 	"net/http"
 	"net/url"
@@ -58,12 +59,17 @@ func (controller *Controller) PostShorting(c *gin.Context) {
 		return
 	}
 
-	shortenedURL := fmt.Sprintf("%s/%s", controller.host, controller.service.getHashByURL(originalURL))
+	hash, err := controller.service.getHashByURL(originalURL)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	shortenedURL := fmt.Sprintf("%s/%s", controller.host, hash)
 	c.String(http.StatusCreated, shortenedURL)
 }
 
 func (controller *Controller) PostShortingJSON(c *gin.Context) {
-	var jsonBody ShortingJSONBody
+	var jsonBody types.ShortingJSONBody
 	byteBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -81,7 +87,12 @@ func (controller *Controller) PostShortingJSON(c *gin.Context) {
 		return
 	}
 
-	shortenedURL := fmt.Sprintf("%s/%s", controller.host, controller.service.getHashByURL(jsonBody.URL))
+	hash, err := controller.service.getHashByURL(jsonBody.URL)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	shortenedURL := fmt.Sprintf("%s/%s", controller.host, hash)
 	c.JSON(http.StatusCreated, gin.H{"result": shortenedURL})
 }
 
