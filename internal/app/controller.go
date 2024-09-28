@@ -108,3 +108,13 @@ func (controller *Controller) GetRedirectToOriginal(c *gin.Context) {
 
 	c.String(http.StatusBadRequest, "invalid URL provided")
 }
+
+func (controller *Controller) GetPing(c *gin.Context) {
+	err := controller.service.Ping()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}

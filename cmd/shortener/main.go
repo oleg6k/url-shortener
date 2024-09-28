@@ -17,10 +17,11 @@ func main() {
 	sugar := *logger.Sugar()
 	cfg := config.Load()
 
-	repository, err := app.NewStorage("", cfg.FileStoragePath)
+	repository, err := app.NewStorage(cfg.DatabaseURL, cfg.FileStoragePath)
 	if err != nil {
 		sugar.Panicw(err.Error(), "event", "load repository")
 	}
+	defer repository.Close()
 
 	service := app.NewService(repository)
 	controller := app.NewController(cfg.BaseURL, service)
@@ -31,6 +32,7 @@ func main() {
 	r.Use(middleware.GzipMiddleware())
 	r.POST("/api/shorten", controller.PostShortingJSON)
 	r.POST("/", controller.PostShorting)
+	r.GET("/ping", controller.GetPing)
 	r.GET("/:shortUrl", controller.GetRedirectToOriginal)
 
 	if err = r.Run(cfg.RunAddr); err != nil {

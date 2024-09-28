@@ -39,3 +39,11 @@ func (p *Storage) Get(key string) (types.URLRecord, bool) {
 func (p *Storage) Delete(key string) error {
 	return p.repository.Delete(key)
 }
+
+func (p *Storage) Health() error {
+	return p.repository.Health()
+}
+
+func (p *Storage) Close() error {
+	return p.repository.Close()
+}
