@@ -21,19 +21,29 @@ func newCompressWriter(w gin.ResponseWriter) *Writer {
 	}
 }
 
-func (c *Writer) Write(p []byte) (int, error) {
-	return c.zw.Write(p)
+func (w *Writer) Write(p []byte) (int, error) {
+	return w.zw.Write(p)
 }
 
-func (c *Writer) WriteHeader(statusCode int) {
-	if statusCode < 300 {
-		c.ResponseWriter.Header().Set("Content-Encoding", "gzip")
+func (w *Writer) WriteHeader(statusCode int) {
+	w.ResponseWriter.Header().Set("Content-Encoding", "gzip")
+	w.ResponseWriter.Header().Del("Content-Length")
+	w.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (w *Writer) WriteString(s string) (int, error) {
+	return w.Write([]byte(s))
+}
+
+func (w *Writer) Flush() {
+	w.zw.Flush()
+	if flusher, ok := w.ResponseWriter.(http.Flusher); ok {
+		flusher.Flush()
 	}
-	c.ResponseWriter.WriteHeader(statusCode)
 }
 
-func (c *Writer) Close() error {
-	return c.zw.Close()
+func (w *Writer) Close() error {
+	return w.zw.Close()
 }
 
 type Reader struct {
@@ -53,15 +63,15 @@ func newCompressReader(r io.ReadCloser) (*Reader, error) {
 	}, nil
 }
 
-func (c Reader) Read(p []byte) (n int, err error) {
-	return c.zr.Read(p)
+func (r *Reader) Read(p []byte) (int, error) {
+	return r.zr.Read(p)
 }
 
-func (c *Reader) Close() error {
-	if err := c.r.Close(); err != nil {
+func (r *Reader) Close() error {
+	if err := r.zr.Close(); err != nil {
 		return err
 	}
-	return c.zr.Close()
+	return r.r.Close()
 }
 
 func GzipMiddleware() func(c *gin.Context) {

@@ -91,3 +91,11 @@ func (r *DiskRepository) Load() error {
 
 	return nil
 }
+
+func (r *DiskRepository) Health() error {
+	return nil
+}
+
+func (r *DiskRepository) Close() error {
+	return nil
+}

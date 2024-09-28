@@ -1,15 +1,21 @@
 package repositories
 
 import (
+	"database/sql"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/oleg6k/url-shortener/internal/app/types"
 )
 
 type DatabaseRepository struct {
-	databaseURL string
+	DB *sql.DB
 }
 
 func NewDatabaseRepository(databaseURL string) (*DatabaseRepository, error) {
-	return &DatabaseRepository{databaseURL: databaseURL}, nil
+	db, err := sql.Open("pgx", databaseURL)
+	if err != nil {
+		panic(err)
+	}
+	return &DatabaseRepository{DB: db}, nil
 }
 
 func (r *DatabaseRepository) Add(record types.URLRecord) error {
@@ -22,4 +28,12 @@ func (r *DatabaseRepository) Get(key string) (types.URLRecord, bool) {
 
 func (r *DatabaseRepository) Delete(key string) error {
 	return nil
+}
+
+func (r *DatabaseRepository) Health() error {
+	return r.DB.Ping()
+}
+
+func (r *DatabaseRepository) Close() error {
+	return r.DB.Close()
 }

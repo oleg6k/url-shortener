@@ -1,3 +1,26 @@
+## Installation
+```bash
+cp example.env .env
+```
+```shell
+docker volume create db_data
+```
+```shell
+docker compose up -d --build pg
+```
+```shell
+docker compose exec -ti -u postgres pg psql
+```
+```sql
+CREATE DATABASE "url_shortener";
+```
+```sql
+exit;
+```
+```shell
+docker compose up -d --build
+```
+
 # go-musthave-shortener-tpl
 
 Шаблон репозитория для трека «Сервис сокращения URL».

@@ -4,6 +4,8 @@ type RepositoryInterface interface {
 	Add(record URLRecord) error
 	Get(key string) (URLRecord, bool)
 	Delete(key string) error
+	Health() error
+	Close() error
 }
 
 type URLRecord struct {
