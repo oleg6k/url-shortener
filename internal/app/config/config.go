@@ -21,8 +21,8 @@ func Load() *Config {
 
 	flag.StringVar(&runAddr, "a", ":8080", "address and port to run server")
 	flag.StringVar(&baseURL, "b", "http://localhost:8080", "base address and port to shortener results")
-	flag.StringVar(&fileStoragePath, "f", "./tmp/storage.json", "storage path")
-	flag.StringVar(&databaseURL, "d", "postgresql://postgres:postgres@localhost:5432/postgres", "database url")
+	flag.StringVar(&fileStoragePath, "f", "", "storage path")
+	flag.StringVar(&databaseURL, "d", "", "database url")
 	flag.Parse()
 
 	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {

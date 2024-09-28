@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/oleg6k/url-shortener/internal/app/repositories"
 	"github.com/oleg6k/url-shortener/internal/app/types"
 )
@@ -15,10 +16,13 @@ func NewStorage(databaseURL, diskPath string) (*Storage, error) {
 
 	if databaseURL != "" {
 		repo, err = repositories.NewDatabaseRepository(databaseURL)
+		fmt.Println("Database repository...")
 	} else if diskPath != "" {
 		repo, err = repositories.NewDiskRepository(diskPath)
+		fmt.Println("Disk repository...")
 	} else {
 		repo, err = repositories.NewInMemoryRepository()
+		fmt.Println("Memory repository...")
 	}
 
 	if err != nil {
