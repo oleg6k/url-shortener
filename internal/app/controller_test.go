@@ -22,8 +22,6 @@ type want struct {
 	contentType string
 }
 
-var cfg = config.Load()
-
 func TestController_GetRedirectToOriginal(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
@@ -41,6 +39,7 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 			},
 		},
 	}
+	cfg := config.Load()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			storage, err := NewStorage(cfg.Storage)
@@ -79,6 +78,7 @@ func TestController_PostShorting(t *testing.T) {
 			},
 		},
 	}
+	cfg := config.Load()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			storage, err := NewStorage(cfg.Storage)
