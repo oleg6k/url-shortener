@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/oleg6k/url-shortener/internal/app/config"
 	"github.com/oleg6k/url-shortener/internal/app/repositories"
 	"github.com/oleg6k/url-shortener/internal/app/types"
 )
@@ -10,15 +11,15 @@ type Storage struct {
 	repository types.RepositoryInterface
 }
 
-func NewStorage(databaseURL, diskPath string) (*Storage, error) {
+func NewStorage(storageCfg config.StorageConfig) (*Storage, error) {
 	var repo types.RepositoryInterface
 	var err error
 
-	if databaseURL != "" {
-		repo, err = repositories.NewDatabaseRepository(databaseURL)
+	if storageCfg.Database.URL != "" {
+		repo, err = repositories.NewDatabaseRepository(storageCfg.Database)
 		fmt.Println("Database repository...")
-	} else if diskPath != "" {
-		repo, err = repositories.NewDiskRepository(diskPath)
+	} else if storageCfg.Disk.Path != "" {
+		repo, err = repositories.NewDiskRepository(storageCfg.Disk)
 		fmt.Println("Disk repository...")
 	} else {
 		repo, err = repositories.NewInMemoryRepository()

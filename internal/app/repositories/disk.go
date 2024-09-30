@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"github.com/google/uuid"
+	"github.com/oleg6k/url-shortener/internal/app/config"
 	"github.com/oleg6k/url-shortener/internal/app/types"
 	"os"
 )
@@ -13,12 +14,12 @@ type DiskRepository struct {
 	inMemoryRepository *InMemoryRepository
 }
 
-func NewDiskRepository(filePath string) (*DiskRepository, error) {
+func NewDiskRepository(cfg config.DiskConfig) (*DiskRepository, error) {
 	inMemoryRepository, err := NewInMemoryRepository()
 	if err != nil {
 		return nil, err
 	}
-	repository := &DiskRepository{filePath: filePath,
+	repository := &DiskRepository{filePath: cfg.Path,
 		inMemoryRepository: inMemoryRepository}
 
 	err = repository.Load()

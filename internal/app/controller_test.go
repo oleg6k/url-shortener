@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"github.com/gin-gonic/gin"
+	"github.com/oleg6k/url-shortener/internal/app/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -20,6 +21,8 @@ type want struct {
 	response    string
 	contentType string
 }
+
+var cfg = config.Load()
 
 func TestController_GetRedirectToOriginal(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -40,7 +43,7 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			storage, err := NewStorage("", "./storage.json")
+			storage, err := NewStorage(cfg.Storage)
 			assert.NoError(t, err)
 			service := NewService(storage)
 			controller := &Controller{
@@ -78,7 +81,7 @@ func TestController_PostShorting(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			storage, err := NewStorage("", "./storage.json")
+			storage, err := NewStorage(cfg.Storage)
 			assert.NoError(t, err)
 			service := NewService(storage)
 			controller := &Controller{
