@@ -12,10 +12,6 @@ import (
 	"testing"
 )
 
-type fields struct {
-	service *Service
-	host    string
-}
 type want struct {
 	code        int
 	response    string
@@ -26,9 +22,8 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	tests := []struct {
-		name   string
-		want   want
-		fields fields
+		name string
+		want want
 	}{
 		{
 			name: "negative test #1",
@@ -46,7 +41,7 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 			assert.NoError(t, err)
 			service := NewService(storage)
 			controller := &Controller{
-				host:    test.fields.host,
+				host:    cfg.App.BaseURL,
 				service: service,
 			}
 			router.GET("/AcDbS", controller.GetRedirectToOriginal)
@@ -65,9 +60,8 @@ func TestController_PostShorting(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	tests := []struct {
-		name   string
-		want   want
-		fields fields
+		name string
+		want want
 	}{
 		{
 			name: "positive test #1",
@@ -85,7 +79,7 @@ func TestController_PostShorting(t *testing.T) {
 			assert.NoError(t, err)
 			service := NewService(storage)
 			controller := &Controller{
-				host:    test.fields.host,
+				host:    cfg.App.BaseURL,
 				service: service,
 			}
 			router.POST("/", controller.PostShorting)
