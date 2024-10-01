@@ -22,8 +22,9 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	tests := []struct {
-		name string
-		want want
+		name   string
+		want   want
+		config config.Config
 	}{
 		{
 			name: "negative test #1",
@@ -34,14 +35,13 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 			},
 		},
 	}
-	cfg := config.Load()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			storage, err := NewStorage(cfg.Storage)
+			storage, err := NewStorage(test.config.Storage)
 			assert.NoError(t, err)
 			service := NewService(storage)
 			controller := &Controller{
-				host:    cfg.App.BaseURL,
+				host:    test.config.App.BaseURL,
 				service: service,
 			}
 			router.GET("/AcDbS", controller.GetRedirectToOriginal)
@@ -60,8 +60,9 @@ func TestController_PostShorting(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	tests := []struct {
-		name string
-		want want
+		name   string
+		want   want
+		config config.Config
 	}{
 		{
 			name: "positive test #1",
@@ -72,14 +73,14 @@ func TestController_PostShorting(t *testing.T) {
 			},
 		},
 	}
-	cfg := config.Load()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			storage, err := NewStorage(cfg.Storage)
+
+			storage, err := NewStorage(test.config.Storage)
 			assert.NoError(t, err)
 			service := NewService(storage)
 			controller := &Controller{
-				host:    cfg.App.BaseURL,
+				host:    test.config.App.BaseURL,
 				service: service,
 			}
 			router.POST("/", controller.PostShorting)

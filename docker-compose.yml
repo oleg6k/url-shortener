@@ -11,8 +11,8 @@ services:
       - "${APP_PORT}:${APP_PORT}"
     env_file:
       - .env
-    environment:
-      DATABASE_DSN: "host=${DB_HOST} user=${DB_USER} password=${DB_PASSWORD} dbname=${DB_NAME} sslmode=disable"
+#    environment:
+#      DATABASE_DSN: "host=${DB_HOST} user=${DB_USER} password=${DB_PASSWORD} dbname=${DB_NAME} sslmode=disable"
   pg:
     image: postgres:14
     environment:
