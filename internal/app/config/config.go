@@ -66,7 +66,7 @@ func Load() *Config {
 		Storage: StorageConfig{
 			Database: DatabaseConfig{
 				URL:           databaseURL,
-				MigrationsDir: "internal/App/migrations",
+				MigrationsDir: "internal/app/migrations",
 			},
 			Disk: DiskConfig{
 				Path: fileStoragePath,
