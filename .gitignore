@@ -11,11 +11,6 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Binaries
-cmd/shortener/main
-shortener
-main
-
 # Dependency directories (remove the comment below to include it)
 vendor/
 
@@ -25,3 +20,5 @@ vendor/
 
 /tmp
 ./shortener
+
+.env

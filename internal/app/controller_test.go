@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"github.com/gin-gonic/gin"
+	"github.com/oleg6k/url-shortener/internal/app/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -11,10 +12,6 @@ import (
 	"testing"
 )
 
-type fields struct {
-	service *Service
-	host    string
-}
 type want struct {
 	code        int
 	response    string
@@ -27,7 +24,7 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 	tests := []struct {
 		name   string
 		want   want
-		fields fields
+		config config.Config
 	}{
 		{
 			name: "negative test #1",
@@ -40,11 +37,11 @@ func TestController_GetRedirectToOriginal(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			storage, err := NewStorage("", "./storage.json")
+			storage, err := NewStorage(test.config.Storage)
 			assert.NoError(t, err)
 			service := NewService(storage)
 			controller := &Controller{
-				host:    test.fields.host,
+				host:    test.config.App.BaseURL,
 				service: service,
 			}
 			router.GET("/AcDbS", controller.GetRedirectToOriginal)
@@ -65,7 +62,7 @@ func TestController_PostShorting(t *testing.T) {
 	tests := []struct {
 		name   string
 		want   want
-		fields fields
+		config config.Config
 	}{
 		{
 			name: "positive test #1",
@@ -78,11 +75,12 @@ func TestController_PostShorting(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			storage, err := NewStorage("", "./storage.json")
+
+			storage, err := NewStorage(test.config.Storage)
 			assert.NoError(t, err)
 			service := NewService(storage)
 			controller := &Controller{
-				host:    test.fields.host,
+				host:    test.config.App.BaseURL,
 				service: service,
 			}
 			router.POST("/", controller.PostShorting)

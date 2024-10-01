@@ -37,3 +37,7 @@ func (service *Service) getURLByHash(hash string) string {
 	url, _ := service.storage.Get(hash)
 	return url.OriginalURL
 }
+
+func (service *Service) Ping() error {
+	return service.storage.Health()
+}

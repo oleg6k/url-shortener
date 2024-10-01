@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  shortener:
+    build:
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - /app/tmp
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    env_file:
+      - .env
+#    environment:
+#      DATABASE_DSN: "host=${DB_HOST} user=${DB_USER} password=${DB_PASSWORD} dbname=${DB_NAME} sslmode=disable"
+  pg:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data:

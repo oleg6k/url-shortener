@@ -39,3 +39,11 @@ func (r *InMemoryRepository) Delete(key string) error {
 	delete(r.storage, key)
 	return nil
 }
+
+func (r *InMemoryRepository) Health() error {
+	return nil
+}
+
+func (r *InMemoryRepository) Close() error {
+	return nil
+}
